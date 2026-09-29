@@ -46,7 +46,7 @@ function Navbar() {
     setIsDashboardOpen(false);
   };
 
-  // Role অনুযায়ী dashboard
+
   const dashboardConfig = {
     user: {
       href: "/dashboard/user",

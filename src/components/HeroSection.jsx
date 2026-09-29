@@ -224,7 +224,7 @@ export default function HeroSection() {
             >
               <Button
                 as={Link}
-                href="/books"
+                href="/browse-books"
                 color="primary"
                 size="lg"
                 radius="full"
