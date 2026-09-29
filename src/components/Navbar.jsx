@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+} from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -18,13 +21,17 @@ import { authClient } from "@/lib/auth-client";
 
 function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Better Auth Session
-  const { data: session, isPending } = authClient.useSession();
+  const {
+    data: session,
+    isPending,
+  } = authClient.useSession();
 
   const user = session?.user;
   const role = user?.role;
@@ -32,9 +39,10 @@ function Navbar() {
   // Active route
   const isActive = (href) => pathname === href;
 
-  const isDashboardActive = pathname.startsWith("/dashboard");
+  const isDashboardActive =
+    pathname.startsWith("/dashboard");
 
-  // Close mobile menu
+  // Close menus
   const closeMenu = () => {
     setIsMenuOpen(false);
     setIsDashboardOpen(false);
@@ -66,16 +74,33 @@ function Navbar() {
 
   const dashboard = dashboardConfig[role];
 
-  // Logout
+  // =========================
+  // LOGOUT
+  // =========================
+
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+
     try {
       setIsLoggingOut(true);
 
-      await authClient.signOut();
+      const { error } = await authClient.signOut();
 
+      if (error) {
+        console.error("Logout error:", error);
+        return;
+      }
+
+      console.log("Logout successful");
+
+      // Close menus
       closeMenu();
 
-      window.location.href = "/auth/signin";
+      // Go to signin
+      router.push("/auth/signin");
+
+      // Refresh server components/session
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -95,7 +120,9 @@ function Navbar() {
 
           <button
             type="button"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() =>
+              setIsMenuOpen((prev) => !prev)
+            }
             className="flex h-10 w-10 items-center justify-center rounded-xl bg-default-100 text-foreground transition hover:bg-default-200 md:hidden"
             aria-label="Toggle navigation menu"
           >
@@ -113,7 +140,9 @@ function Navbar() {
             onClick={closeMenu}
             className="group text-xl font-bold tracking-tight"
           >
-            <span className="text-foreground">Biblio</span>
+            <span className="text-foreground">
+              Biblio
+            </span>
 
             <span className="text-primary transition-opacity group-hover:opacity-80">
               Drop
@@ -156,9 +185,12 @@ function Navbar() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsDashboardOpen(!isDashboardOpen)}
+                onClick={() =>
+                  setIsDashboardOpen((prev) => !prev)
+                }
                 className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-                  isDashboardActive || isDashboardOpen
+                  isDashboardActive ||
+                  isDashboardOpen
                     ? "bg-primary/10 text-primary"
                     : "text-foreground/70 hover:bg-default-100 hover:text-foreground"
                 }`}
@@ -167,24 +199,22 @@ function Navbar() {
 
                 <ChevronDown
                   className={`h-4 w-4 transition-transform duration-200 ${
-                    isDashboardOpen ? "rotate-180" : ""
+                    isDashboardOpen
+                      ? "rotate-180"
+                      : ""
                   }`}
                 />
               </button>
 
-              {/* Dashboard Dropdown */}
+              {/* Dropdown */}
 
               {isDashboardOpen && (
                 <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-divider bg-content1 p-2 shadow-2xl shadow-black/30">
-                  {/* Header */}
-
                   <div className="px-3 pb-2 pt-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-foreground/40">
                       My Dashboard
                     </p>
                   </div>
-
-                  {/* Current Role Dashboard */}
 
                   <Link
                     href={dashboard.href}
@@ -212,7 +242,7 @@ function Navbar() {
             </div>
           )}
 
-          {/* ================= AUTH ================= */}
+          {/* ================= LOGIN ================= */}
 
           {!isPending && !user && (
             <Link
@@ -227,7 +257,7 @@ function Navbar() {
             </Link>
           )}
 
-          {/* ================= LOGGED-IN USER ================= */}
+          {/* ================= LOGGED USER ================= */}
 
           {!isPending && user && (
             <div className="ml-3 flex items-center gap-2">
@@ -259,7 +289,9 @@ function Navbar() {
               >
                 <LogOut className="h-4 w-4" />
 
-                {isLoggingOut ? "Logging out..." : "Logout"}
+                {isLoggingOut
+                  ? "Logging out..."
+                  : "Logout"}
               </button>
             </div>
           )}
@@ -299,15 +331,20 @@ function Navbar() {
               Browse Books
             </Link>
 
-            {/* ================= MOBILE DASHBOARD ================= */}
+            {/* Dashboard */}
 
             {dashboard && (
               <>
                 <button
                   type="button"
-                  onClick={() => setIsDashboardOpen(!isDashboardOpen)}
+                  onClick={() =>
+                    setIsDashboardOpen(
+                      (prev) => !prev
+                    )
+                  }
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
-                    isDashboardActive || isDashboardOpen
+                    isDashboardActive ||
+                    isDashboardOpen
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/75 hover:bg-default-100"
                   }`}
@@ -316,7 +353,9 @@ function Navbar() {
 
                   <ChevronDown
                     className={`h-4 w-4 transition-transform ${
-                      isDashboardOpen ? "rotate-180" : ""
+                      isDashboardOpen
+                        ? "rotate-180"
+                        : ""
                     }`}
                   />
                 </button>
@@ -347,7 +386,7 @@ function Navbar() {
               </>
             )}
 
-            {/* ================= MOBILE AUTH ================= */}
+            {/* Mobile Auth */}
 
             {!isPending && !user && (
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -360,7 +399,7 @@ function Navbar() {
                 </Link>
 
                 <Link
-                  href="/auth/signin"
+                  href="/auth/signup"
                   onClick={closeMenu}
                   className="rounded-xl border border-divider px-4 py-3 text-center text-sm font-semibold text-foreground transition hover:bg-default-100"
                 >
@@ -369,7 +408,7 @@ function Navbar() {
               </div>
             )}
 
-            {/* ================= MOBILE USER ================= */}
+            {/* Mobile User */}
 
             {!isPending && user && (
               <div className="mt-2 space-y-2">
@@ -401,7 +440,9 @@ function Navbar() {
                 >
                   <LogOut className="h-4 w-4" />
 
-                  {isLoggingOut ? "Logging out..." : "Logout"}
+                  {isLoggingOut
+                    ? "Logging out..."
+                    : "Logout"}
                 </button>
               </div>
             )}
