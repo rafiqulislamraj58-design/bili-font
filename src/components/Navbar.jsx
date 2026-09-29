@@ -1,9 +1,9 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+
 import {
   ChevronDown,
   Menu,
@@ -11,42 +11,36 @@ import {
   UserRound,
   LibraryBig,
   Settings2,
+  LogOut,
 } from "lucide-react";
+
+import { authClient } from "@/lib/auth-client";
 
 function Navbar() {
   const pathname = usePathname();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const [user, setUser] = useState(null);
+  // Better Auth Session
+  const { data: session, isPending } = authClient.useSession();
 
-  // Get logged-in user
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Invalid user data:", error);
-        localStorage.removeItem("user");
-      }
-    }
-  }, []);
-
+  const user = session?.user;
   const role = user?.role;
 
+  // Active route
   const isActive = (href) => pathname === href;
 
   const isDashboardActive = pathname.startsWith("/dashboard");
 
+  // Close mobile menu
   const closeMenu = () => {
     setIsMenuOpen(false);
     setIsDashboardOpen(false);
   };
 
-
+  // Dashboard configuration
   const dashboardConfig = {
     user: {
       href: "/dashboard/user",
@@ -72,16 +66,33 @@ function Navbar() {
 
   const dashboard = dashboardConfig[role];
 
+  // Logout
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+
+      await authClient.signOut();
+
+      closeMenu();
+
+      window.location.href = "/auth/signin";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-divider bg-background/80 backdrop-blur-xl">
-
       {/* ================= NAVBAR ================= */}
+
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
         {/* ================= LEFT ================= */}
-        <div className="flex items-center gap-3">
 
+        <div className="flex items-center gap-3">
           {/* Mobile Menu */}
+
           <button
             type="button"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -96,12 +107,14 @@ function Navbar() {
           </button>
 
           {/* Logo */}
+
           <Link
             href="/"
             onClick={closeMenu}
             className="group text-xl font-bold tracking-tight"
           >
             <span className="text-foreground">Biblio</span>
+
             <span className="text-primary transition-opacity group-hover:opacity-80">
               Drop
             </span>
@@ -109,9 +122,10 @@ function Navbar() {
         </div>
 
         {/* ================= DESKTOP NAV ================= */}
-        <div className="hidden items-center gap-1 md:flex">
 
+        <div className="hidden items-center gap-1 md:flex">
           {/* Home */}
+
           <Link
             href="/"
             className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
@@ -124,6 +138,7 @@ function Navbar() {
           </Link>
 
           {/* Browse Books */}
+
           <Link
             href="/browse-books"
             className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
@@ -136,9 +151,9 @@ function Navbar() {
           </Link>
 
           {/* ================= DASHBOARD ================= */}
+
           {dashboard && (
             <div className="relative">
-
               <button
                 type="button"
                 onClick={() => setIsDashboardOpen(!isDashboardOpen)}
@@ -158,10 +173,11 @@ function Navbar() {
               </button>
 
               {/* Dashboard Dropdown */}
+
               {isDashboardOpen && (
                 <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-divider bg-content1 p-2 shadow-2xl shadow-black/30">
-
                   {/* Header */}
+
                   <div className="px-3 pb-2 pt-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-foreground/40">
                       My Dashboard
@@ -169,6 +185,7 @@ function Navbar() {
                   </div>
 
                   {/* Current Role Dashboard */}
+
                   <Link
                     href={dashboard.href}
                     onClick={closeMenu}
@@ -190,18 +207,18 @@ function Navbar() {
 
                     <ChevronDown className="ml-auto h-4 w-4 -rotate-90 text-foreground/30" />
                   </Link>
-
                 </div>
               )}
             </div>
           )}
 
-          {/* Login */}
-          {!user && (
+          {/* ================= AUTH ================= */}
+
+          {!isPending && !user && (
             <Link
-              href="/login"
+              href="/auth/signin"
               className={`ml-3 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all ${
-                isActive("/login")
+                isActive("/auth/signin")
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                   : "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20"
               }`}
@@ -210,35 +227,52 @@ function Navbar() {
             </Link>
           )}
 
-          {/* Logged-in User */}
-          {user && (
-            <div className="ml-3 flex items-center gap-2 rounded-xl bg-default-100 px-3 py-2">
+          {/* ================= LOGGED-IN USER ================= */}
 
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <UserRound className="h-4 w-4" />
+          {!isPending && user && (
+            <div className="ml-3 flex items-center gap-2">
+              {/* User Info */}
+
+              <div className="flex items-center gap-2 rounded-xl bg-default-100 px-3 py-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <UserRound className="h-4 w-4" />
+                </div>
+
+                <div className="hidden lg:block">
+                  <p className="max-w-28 truncate text-xs font-medium text-foreground">
+                    {user.name || user.email}
+                  </p>
+
+                  <p className="text-[10px] capitalize text-foreground/40">
+                    {role}
+                  </p>
+                </div>
               </div>
 
-              <div className="hidden lg:block">
-                <p className="max-w-28 truncate text-xs font-medium text-foreground">
-                  {user.name || user.email}
-                </p>
+              {/* Logout */}
 
-                <p className="text-[10px] capitalize text-foreground/40">
-                  {role}
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 rounded-xl bg-danger/10 px-4 py-2.5 text-sm font-semibold text-danger transition hover:bg-danger/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <LogOut className="h-4 w-4" />
+
+                {isLoggingOut ? "Logging out..." : "Logout"}
+              </button>
             </div>
           )}
         </div>
       </div>
 
       {/* ================= MOBILE NAV ================= */}
+
       {isMenuOpen && (
         <div className="border-t border-divider bg-background md:hidden">
-
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
-
             {/* Home */}
+
             <Link
               href="/"
               onClick={closeMenu}
@@ -252,6 +286,7 @@ function Navbar() {
             </Link>
 
             {/* Browse */}
+
             <Link
               href="/browse-books"
               onClick={closeMenu}
@@ -265,13 +300,12 @@ function Navbar() {
             </Link>
 
             {/* ================= MOBILE DASHBOARD ================= */}
+
             {dashboard && (
               <>
                 <button
                   type="button"
-                  onClick={() =>
-                    setIsDashboardOpen(!isDashboardOpen)
-                  }
+                  onClick={() => setIsDashboardOpen(!isDashboardOpen)}
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
                     isDashboardActive || isDashboardOpen
                       ? "bg-primary/10 text-primary"
@@ -289,7 +323,6 @@ function Navbar() {
 
                 {isDashboardOpen && (
                   <div className="ml-3 border-l-2 border-primary/20 pl-3">
-
                     <Link
                       href={dashboard.href}
                       onClick={closeMenu}
@@ -309,43 +342,69 @@ function Navbar() {
                         </p>
                       </div>
                     </Link>
-
                   </div>
                 )}
               </>
             )}
 
-            {/* Mobile Login */}
-            {!user && (
-              <Link
-                href="/login"
-                onClick={closeMenu}
-                className="mt-2 rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90"
-              >
-                Login
-              </Link>
-            )}
+            {/* ================= MOBILE AUTH ================= */}
 
-            {/* Mobile User Info */}
-            {user && (
-              <div className="mt-2 flex items-center gap-3 rounded-xl bg-default-100 px-4 py-3">
+            {!isPending && !user && (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <Link
+                  href="/auth/signin"
+                  onClick={closeMenu}
+                  className="rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90"
+                >
+                  Login
+                </Link>
 
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <UserRound className="h-4 w-4" />
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">
-                    {user.name || user.email}
-                  </p>
-
-                  <p className="text-xs capitalize text-foreground/45">
-                    {role}
-                  </p>
-                </div>
+                <Link
+                  href="/auth/signin"
+                  onClick={closeMenu}
+                  className="rounded-xl border border-divider px-4 py-3 text-center text-sm font-semibold text-foreground transition hover:bg-default-100"
+                >
+                  Sign Up
+                </Link>
               </div>
             )}
 
+            {/* ================= MOBILE USER ================= */}
+
+            {!isPending && user && (
+              <div className="mt-2 space-y-2">
+                {/* User Info */}
+
+                <div className="flex items-center gap-3 rounded-xl bg-default-100 px-4 py-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <UserRound className="h-4 w-4" />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium">
+                      {user.name || user.email}
+                    </p>
+
+                    <p className="text-xs capitalize text-foreground/45">
+                      {role}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Logout */}
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-danger/10 px-4 py-3 text-sm font-semibold text-danger transition hover:bg-danger/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <LogOut className="h-4 w-4" />
+
+                  {isLoggingOut ? "Logging out..." : "Logout"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
