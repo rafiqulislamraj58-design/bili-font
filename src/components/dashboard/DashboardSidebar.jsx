@@ -28,7 +28,7 @@ const menuItems = [
   },
   {
     label: "Add Book",
-    href: "/dashboard/librarian/books/add",
+    href: "/dashboard/libariyan/books/add",
     icon: PlusCircle,
   },
   {

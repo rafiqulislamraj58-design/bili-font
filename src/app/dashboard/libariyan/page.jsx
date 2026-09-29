@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -8,8 +9,10 @@ import {
   Plus,
   ArrowUpRight,
   Clock,
-  CheckCircle2,
 } from "lucide-react";
+
+import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
 const stats = [
   {
@@ -102,11 +105,29 @@ function StatusBadge({ status }) {
 }
 
 export default function LibrarianDashboard() {
+
+
+  const {
+    data: session,
+    isPending,
+  } = authClient.useSession();
+
+  const user = session?.user;
+
+
+  const userName = user?.name || "Librarian";
+  const userEmail = user?.email || "";
+  const userRole = user?.role || "librarian";
+
+  // First letter for avatar
+  const userInitial =
+    userName?.charAt(0)?.toUpperCase() || "L";
+
   return (
     <div className="min-h-screen bg-[#f7f8f5] p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl">
 
-        {/* Header */}
+
         <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="mb-1 text-sm font-medium text-[#6b7280]">
@@ -114,21 +135,72 @@ export default function LibrarianDashboard() {
             </p>
 
             <h1 className="text-2xl font-bold tracking-tight text-[#17211b] sm:text-3xl">
-              Good evening, Rojony 👋
+              {isPending
+                ? "Good evening 👋"
+                : `Good evening, ${userName} 👋`}
             </h1>
 
             <p className="mt-2 text-sm text-[#6b7280]">
               Here&apos;s what&apos;s happening with your books today.
             </p>
+
+            {/* Logged User Info */}
+            {!isPending && user && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[#7b817c]">
+                <span>{userEmail}</span>
+
+                <span className="rounded-full bg-[#eaf1e9] px-2.5 py-1 font-medium capitalize text-[#355b3e]">
+                  {userRole}
+                </span>
+              </div>
+            )}
           </div>
 
-          <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#243b2b] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1b2e21]">
+          <Link
+            href="/dashboard/librarian/books/add"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#243b2b] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1b2e21]"
+          >
             <Plus size={18} />
             Add New Book
-          </button>
+          </Link>
         </div>
 
-        {/* Stats */}
+
+        {!isPending && user && (
+          <div className="mb-6 rounded-2xl border border-[#e5e8e2] bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              
+              {/* Avatar */}
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1e9] text-xl font-bold text-[#355b3e]">
+                {userInitial}
+              </div>
+
+              {/* User Info */}
+              <div className="min-w-0 flex-1">
+                <p className="text-lg font-semibold text-[#17211b]">
+                  {userName}
+                </p>
+
+                <p className="mt-1 text-sm text-[#7b817c]">
+                  {userEmail}
+                </p>
+
+                <p className="mt-1 text-xs capitalize text-[#9aa19b]">
+                  Account role: {userRole}
+                </p>
+              </div>
+
+              <Link
+                href="/dashboard/librarian/profile"
+                className="rounded-xl border border-[#dfe5dd] px-4 py-2.5 text-sm font-semibold text-[#355b3e] transition hover:bg-[#f3f6f1]"
+              >
+                View Profile
+              </Link>
+            </div>
+          </div>
+        )}
+
+
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
@@ -156,7 +228,9 @@ export default function LibrarianDashboard() {
 
                 <div className="mt-4 flex items-center gap-1 text-xs font-medium text-emerald-600">
                   <ArrowUpRight size={14} />
+
                   {stat.change}
+
                   <span className="ml-1 text-[#8a908b]">
                     from last month
                   </span>
@@ -166,10 +240,10 @@ export default function LibrarianDashboard() {
           })}
         </div>
 
-        {/* Main grid */}
+
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
 
-          {/* Chart */}
+
           <div className="rounded-2xl border border-[#e5e8e2] bg-white p-6 shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between">
               <div>
@@ -189,7 +263,7 @@ export default function LibrarianDashboard() {
               </select>
             </div>
 
-            {/* Fake chart for UI */}
+
             <div className="mt-8 flex h-64 items-end gap-3 border-b border-[#edf0eb] px-2 pb-0">
               {[35, 55, 42, 72, 50, 85, 65, 92, 70, 78, 58, 88].map(
                 (height, index) => (
@@ -217,7 +291,7 @@ export default function LibrarianDashboard() {
             </div>
           </div>
 
-          {/* Popular Books */}
+
           <div className="rounded-2xl border border-[#e5e8e2] bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
@@ -230,7 +304,10 @@ export default function LibrarianDashboard() {
                 </p>
               </div>
 
-              <BookOpen size={20} className="text-[#58725e]" />
+              <BookOpen
+                size={20}
+                className="text-[#58725e]"
+              />
             </div>
 
             <div className="mt-6 space-y-4">
@@ -262,7 +339,7 @@ export default function LibrarianDashboard() {
           </div>
         </div>
 
-        {/* Recent Deliveries */}
+
         <div className="mt-6 rounded-2xl border border-[#e5e8e2] bg-white shadow-sm">
 
           <div className="flex flex-col gap-3 border-b border-[#edf0eb] p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -276,20 +353,35 @@ export default function LibrarianDashboard() {
               </p>
             </div>
 
-            <button className="text-sm font-semibold text-[#355b3e] hover:underline">
+            <Link
+              href="/dashboard/librarian/deliveries"
+              className="text-sm font-semibold text-[#355b3e] hover:underline"
+            >
               View all
-            </button>
+            </Link>
           </div>
 
-          {/* Desktop table */}
+
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#edf0eb] text-left text-xs uppercase tracking-wider text-[#8a908b]">
-                  <th className="px-6 py-4 font-medium">Book</th>
-                  <th className="px-6 py-4 font-medium">Customer</th>
-                  <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
+                  <th className="px-6 py-4 font-medium">
+                    Book
+                  </th>
+
+                  <th className="px-6 py-4 font-medium">
+                    Customer
+                  </th>
+
+                  <th className="px-6 py-4 font-medium">
+                    Date
+                  </th>
+
+                  <th className="px-6 py-4 font-medium">
+                    Status
+                  </th>
+
                   <th className="px-6 py-4 text-right font-medium">
                     Action
                   </th>
@@ -326,13 +418,18 @@ export default function LibrarianDashboard() {
                     </td>
 
                     <td className="px-6 py-4">
-                      <StatusBadge status={delivery.status} />
+                      <StatusBadge
+                        status={delivery.status}
+                      />
                     </td>
 
                     <td className="px-6 py-4 text-right">
-                      <button className="text-sm font-semibold text-[#355b3e] hover:underline">
+                      <Link
+                        href="/dashboard/librarian/deliveries"
+                        className="text-sm font-semibold text-[#355b3e] hover:underline"
+                      >
                         Manage
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -340,7 +437,7 @@ export default function LibrarianDashboard() {
             </table>
           </div>
 
-          {/* Mobile cards */}
+
           <div className="space-y-3 p-4 md:hidden">
             {deliveries.map((delivery) => (
               <div
@@ -358,7 +455,9 @@ export default function LibrarianDashboard() {
                     </p>
                   </div>
 
-                  <StatusBadge status={delivery.status} />
+                  <StatusBadge
+                    status={delivery.status}
+                  />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
@@ -366,19 +465,25 @@ export default function LibrarianDashboard() {
                     {delivery.date}
                   </span>
 
-                  <button className="text-xs font-semibold text-[#355b3e]">
+                  <Link
+                    href="/dashboard/librarian/deliveries"
+                    className="text-xs font-semibold text-[#355b3e]"
+                  >
                     Manage
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Quick Actions */}
+
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
 
-          <button className="group rounded-2xl border border-[#dfe5dd] bg-[#eef4ed] p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm">
+          <Link
+            href="/dashboard/librarian/books/add"
+            className="group rounded-2xl border border-[#dfe5dd] bg-[#eef4ed] p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+          >
             <Plus
               size={21}
               className="text-[#355b3e]"
@@ -391,9 +496,12 @@ export default function LibrarianDashboard() {
             <p className="mt-1 text-sm text-[#687269]">
               Add a new book to your inventory.
             </p>
-          </button>
+          </Link>
 
-          <button className="group rounded-2xl border border-[#e5e8e2] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm">
+          <Link
+            href="/dashboard/librarian/deliveries"
+            className="group rounded-2xl border border-[#e5e8e2] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+          >
             <Truck
               size={21}
               className="text-[#355b3e]"
@@ -406,9 +514,12 @@ export default function LibrarianDashboard() {
             <p className="mt-1 text-sm text-[#687269]">
               Update pending delivery requests.
             </p>
-          </button>
+          </Link>
 
-          <button className="group rounded-2xl border border-[#e5e8e2] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm">
+          <Link
+            href="/dashboard/librarian/customers"
+            className="group rounded-2xl border border-[#e5e8e2] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+          >
             <Users
               size={21}
               className="text-[#355b3e]"
@@ -421,10 +532,11 @@ export default function LibrarianDashboard() {
             <p className="mt-1 text-sm text-[#687269]">
               Review your recent customers.
             </p>
-          </button>
+          </Link>
 
         </div>
       </div>
     </div>
   );
 }
+
