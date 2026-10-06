@@ -1,40 +1,23 @@
-"use client";
-
-import { useState } from "react";
-import { Menu } from "lucide-react";
+import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
-export default function DashboardLayout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
+export default function RootLayout({ children }) {
   return (
-    <div className="flex min-h-screen bg-[#f7f8f5]">
+    <div className="min-h-screen bg-slate-100 flex flex-col">
+      {/* Top Bar */}
+      <DashboardNavbar/>
 
-      {/* Sidebar */}
-      <DashboardSidebar
-        open={sidebarOpen}
-        setOpen={setSidebarOpen}
-      />
+      {/* Body: Sidebar + Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <DashboardSidebar/>
 
-      {/* Main Content */}
-      <div className="min-w-0 flex-1">
-
-        {/* Mobile Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-[#e5e8e2] bg-white/95 px-4 backdrop-blur lg:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="rounded-xl p-2 text-[#354038] hover:bg-[#f3f5f2]"
-          >
-            <Menu size={23} />
-          </button>
-
-          <span className="ml-3 text-base font-semibold text-[#17211b]">
-            Librarian Dashboard
-          </span>
-        </header>
-
-        {/* Page */}
-        <main>{children}</main>
+        {/* Main Content */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 min-h-full">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

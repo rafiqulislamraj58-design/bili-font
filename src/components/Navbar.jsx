@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -27,28 +24,28 @@ function Navbar() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Better Auth Session
-  const {
-    data: session,
-    isPending,
-  } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   const user = session?.user;
   const role = user?.role;
 
-  // Active route
-  const isActive = (href) => pathname === href;
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
 
-  const isDashboardActive =
-    pathname.startsWith("/dashboard");
-
-  // Close menus
   const closeMenu = () => {
     setIsMenuOpen(false);
     setIsDashboardOpen(false);
   };
 
-  // Dashboard configuration
+  const isActive = (href) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   const dashboardConfig = {
     user: {
       href: "/dashboard/user",
@@ -72,11 +69,10 @@ function Navbar() {
     },
   };
 
-  const dashboard = dashboardConfig[role];
+  const dashboard = role ? dashboardConfig[role] : null;
 
-  // =========================
-  // LOGOUT
-  // =========================
+  const isDashboardActive =
+    dashboard && pathname.startsWith(dashboard.href);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -91,15 +87,9 @@ function Navbar() {
         return;
       }
 
-      console.log("Logout successful");
-
-      // Close menus
       closeMenu();
 
-      // Go to signin
       router.push("/auth/signin");
-
-      // Refresh server components/session
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -110,19 +100,13 @@ function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-divider bg-background/80 backdrop-blur-xl">
-      {/* ================= NAVBAR ================= */}
-
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* ================= LEFT ================= */}
 
         <div className="flex items-center gap-3">
-          {/* Mobile Menu */}
 
           <button
             type="button"
-            onClick={() =>
-              setIsMenuOpen((prev) => !prev)
-            }
+            onClick={() => setIsMenuOpen((prev) => !prev)}
             className="flex h-10 w-10 items-center justify-center rounded-xl bg-default-100 text-foreground transition hover:bg-default-200 md:hidden"
             aria-label="Toggle navigation menu"
           >
@@ -133,16 +117,12 @@ function Navbar() {
             )}
           </button>
 
-          {/* Logo */}
-
           <Link
             href="/"
             onClick={closeMenu}
             className="group text-xl font-bold tracking-tight"
           >
-            <span className="text-foreground">
-              Biblio
-            </span>
+            <span className="text-foreground">Biblio</span>
 
             <span className="text-primary transition-opacity group-hover:opacity-80">
               Drop
@@ -150,10 +130,7 @@ function Navbar() {
           </Link>
         </div>
 
-        {/* ================= DESKTOP NAV ================= */}
-
         <div className="hidden items-center gap-1 md:flex">
-          {/* Home */}
 
           <Link
             href="/"
@@ -166,8 +143,6 @@ function Navbar() {
             Home
           </Link>
 
-          {/* Browse Books */}
-
           <Link
             href="/browse-books"
             className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
@@ -179,8 +154,6 @@ function Navbar() {
             Browse Books
           </Link>
 
-          {/* ================= DASHBOARD ================= */}
-
           {dashboard && (
             <div className="relative">
               <button
@@ -189,8 +162,7 @@ function Navbar() {
                   setIsDashboardOpen((prev) => !prev)
                 }
                 className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-                  isDashboardActive ||
-                  isDashboardOpen
+                  isDashboardActive || isDashboardOpen
                     ? "bg-primary/10 text-primary"
                     : "text-foreground/70 hover:bg-default-100 hover:text-foreground"
                 }`}
@@ -199,19 +171,16 @@ function Navbar() {
 
                 <ChevronDown
                   className={`h-4 w-4 transition-transform duration-200 ${
-                    isDashboardOpen
-                      ? "rotate-180"
-                      : ""
+                    isDashboardOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
 
-              {/* Dropdown */}
-
               {isDashboardOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-divider bg-content1 p-2 shadow-2xl shadow-black/30">
+                <div className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-2xl border border-divider bg-content1 p-2 text-black shadow-2xl shadow-black/30">
+
                   <div className="px-3 pb-2 pt-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground/40">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-black/50">
                       My Dashboard
                     </p>
                   </div>
@@ -219,30 +188,28 @@ function Navbar() {
                   <Link
                     href={dashboard.href}
                     onClick={closeMenu}
-                    className="group flex items-center gap-3 rounded-xl bg-default-100 px-3 py-3 transition hover:bg-primary/10"
+                    className="group flex items-center gap-3 rounded-xl bg-default-100 px-3 py-3 text-black transition hover:bg-primary/10"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
                       <dashboard.icon className="h-5 w-5" />
                     </div>
 
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-sm font-semibold text-black">
                         {dashboard.label}
                       </p>
 
-                      <p className="truncate text-xs text-foreground/45">
+                      <p className="truncate text-xs text-black/50">
                         {dashboard.description}
                       </p>
                     </div>
 
-                    <ChevronDown className="ml-auto h-4 w-4 -rotate-90 text-foreground/30" />
+                    <ChevronDown className="ml-auto h-4 w-4 -rotate-90 text-black/40" />
                   </Link>
                 </div>
               )}
             </div>
           )}
-
-          {/* ================= LOGIN ================= */}
 
           {!isPending && !user && (
             <Link
@@ -257,13 +224,11 @@ function Navbar() {
             </Link>
           )}
 
-          {/* ================= LOGGED USER ================= */}
-
           {!isPending && user && (
             <div className="ml-3 flex items-center gap-2">
-              {/* User Info */}
 
               <div className="flex items-center gap-2 rounded-xl bg-default-100 px-3 py-2">
+
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <UserRound className="h-4 w-4" />
                 </div>
@@ -279,8 +244,6 @@ function Navbar() {
                 </div>
               </div>
 
-              {/* Logout */}
-
               <button
                 type="button"
                 onClick={handleLogout}
@@ -289,21 +252,17 @@ function Navbar() {
               >
                 <LogOut className="h-4 w-4" />
 
-                {isLoggingOut
-                  ? "Logging out..."
-                  : "Logout"}
+                {isLoggingOut ? "Logging out..." : "Logout"}
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* ================= MOBILE NAV ================= */}
-
       {isMenuOpen && (
         <div className="border-t border-divider bg-background md:hidden">
+
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
-            {/* Home */}
 
             <Link
               href="/"
@@ -317,8 +276,6 @@ function Navbar() {
               Home
             </Link>
 
-            {/* Browse */}
-
             <Link
               href="/browse-books"
               onClick={closeMenu}
@@ -331,20 +288,15 @@ function Navbar() {
               Browse Books
             </Link>
 
-            {/* Dashboard */}
-
             {dashboard && (
               <>
                 <button
                   type="button"
                   onClick={() =>
-                    setIsDashboardOpen(
-                      (prev) => !prev
-                    )
+                    setIsDashboardOpen((prev) => !prev)
                   }
                   className={`flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
-                    isDashboardActive ||
-                    isDashboardOpen
+                    isDashboardActive || isDashboardOpen
                       ? "bg-primary/10 text-primary"
                       : "text-foreground/75 hover:bg-default-100"
                   }`}
@@ -353,30 +305,29 @@ function Navbar() {
 
                   <ChevronDown
                     className={`h-4 w-4 transition-transform ${
-                      isDashboardOpen
-                        ? "rotate-180"
-                        : ""
+                      isDashboardOpen ? "rotate-180" : ""
                     }`}
                   />
                 </button>
 
                 {isDashboardOpen && (
                   <div className="ml-3 border-l-2 border-primary/20 pl-3">
+
                     <Link
                       href={dashboard.href}
                       onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-xl bg-default-100 px-3 py-3 transition hover:bg-primary/10"
+                      className="flex items-center gap-3 rounded-xl bg-default-100 px-3 py-3 text-white transition hover:bg-primary/10"
                     >
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                         <dashboard.icon className="h-4 w-4" />
                       </div>
 
                       <div>
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-medium text-white">
                           {dashboard.label}
                         </p>
 
-                        <p className="text-xs text-foreground/45">
+                        <p className="text-xs text-white/50">
                           {dashboard.description}
                         </p>
                       </div>
@@ -386,10 +337,9 @@ function Navbar() {
               </>
             )}
 
-            {/* Mobile Auth */}
-
             {!isPending && !user && (
               <div className="mt-2 grid grid-cols-2 gap-2">
+
                 <Link
                   href="/auth/signin"
                   onClick={closeMenu}
@@ -405,16 +355,15 @@ function Navbar() {
                 >
                   Sign Up
                 </Link>
+
               </div>
             )}
 
-            {/* Mobile User */}
-
             {!isPending && user && (
               <div className="mt-2 space-y-2">
-                {/* User Info */}
 
                 <div className="flex items-center gap-3 rounded-xl bg-default-100 px-4 py-3">
+
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <UserRound className="h-4 w-4" />
                   </div>
@@ -428,9 +377,8 @@ function Navbar() {
                       {role}
                     </p>
                   </div>
-                </div>
 
-                {/* Logout */}
+                </div>
 
                 <button
                   type="button"
@@ -440,10 +388,9 @@ function Navbar() {
                 >
                   <LogOut className="h-4 w-4" />
 
-                  {isLoggingOut
-                    ? "Logging out..."
-                    : "Logout"}
+                  {isLoggingOut ? "Logging out..." : "Logout"}
                 </button>
+
               </div>
             )}
           </div>

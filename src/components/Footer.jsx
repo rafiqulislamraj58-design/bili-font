@@ -1,5 +1,5 @@
 "use client";
-
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   BookOpen,
@@ -12,6 +12,11 @@ import {
 } from "lucide-react";
 
 function Footer() {
+  const pathname = usePathname();
+   if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -20,10 +25,12 @@ function Footer() {
   };
 
   const currentYear = new Date().getFullYear();
+  
 
+ 
   return (
     <footer className="border-t border-divider bg-background">
-      {/* ================= MAIN FOOTER ================= */}
+      
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
 

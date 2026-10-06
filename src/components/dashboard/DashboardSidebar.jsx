@@ -2,242 +2,173 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  BookOpen,
-  PlusCircle,
-  Truck,
-  MessageSquare,
-  UserCircle,
-  Settings,
-  LogOut,
-  Library,
-  X,
-} from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
-const menuItems = [
-  {
-    label: "Dashboard",
-    href: "/dashboard/librarian",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "My Books",
-    href: "/dashboard/librarian/books",
-    icon: BookOpen,
-  },
-  {
-    label: "Add Book",
-    href: "/dashboard/libariyan/books/add",
-    icon: PlusCircle,
-  },
-  {
-    label: "Delivery Requests",
-    href: "/dashboard/librarian/deliveries",
-    icon: Truck,
-  },
-  {
-    label: "Reviews",
-    href: "/dashboard/librarian/reviews",
-    icon: MessageSquare,
-  },
-];
-
-const accountItems = [
-  {
-    label: "Profile",
-    href: "/dashboard/librarian/profile",
-    icon: UserCircle,
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/librarian/settings",
-    icon: Settings,
-  },
-];
-
-export default function DashboardSidebar({ open, setOpen }) {
+const DashboardSidebar = () => {
   const pathname = usePathname();
+  const { data: session, isPending } = authClient.useSession();
 
-  const isActive = (href) => {
-    if (href === "/dashboard/librarian") {
-      return pathname === href;
-    }
+  if (isPending) {
+    return (
+      <aside className="hidden md:flex w-[240px] bg-slate-950 text-white p-4">
+        <div className="w-full h-8 bg-slate-800 rounded animate-pulse" />
+      </aside>
+    );
+  }
 
-    return pathname.startsWith(href);
+  const user = session?.user;
+  const role = user?.role;
+
+  const menus = {
+    user: [
+      {
+        title: "Dashboard",
+        href: "/dashboard/user",
+        icon: "🏠",
+      },
+      {
+        title: "Delivery History",
+        href: "/dashboard/user/deliveries",
+        icon: "📦",
+      },
+      {
+        title: "Reading List",
+        href: "/dashboard/user/reading-list",
+        icon: "📚",
+      },
+      {
+        title: "My Reviews",
+        href: "/dashboard/user/reviews",
+        icon: "⭐",
+      },
+      {
+        title: "Profile",
+        href: "/dashboard/user/profile",
+        icon: "👤",
+      },
+    ],
+
+    librarian: [
+      {
+        title: "Dashboard",
+        href: "/dashboard/librarian",
+        icon: "🏠",
+      },
+      {
+        title: "Add Book",
+        href: "/dashboard/librarian/add-book",
+        icon: "➕",
+      },
+      {
+        title: "Manage Inventory",
+        href: "/dashboard/librarian/books",
+        icon: "📚",
+      },
+      {
+        title: "Manage Deliveries",
+        href: "/dashboard/librarian/deliveries",
+        icon: "🚚",
+      },
+      {
+        title: "Earnings",
+        href: "/dashboard/librarian/earnings",
+        icon: "💰",
+      },
+      {
+        title: "Profile",
+        href: "/dashboard/librarian/profile",
+        icon: "👤",
+      },
+    ],
+
+    admin: [
+      {
+        title: "Dashboard",
+        href: "/dashboard/admin",
+        icon: "🏠",
+      },
+      {
+        title: "Book Approval",
+        href: "/dashboard/admin/books/approval",
+        icon: "✅",
+      },
+      {
+        title: "Manage Users",
+        href: "/dashboard/admin/users",
+        icon: "👥",
+      },
+      {
+        title: "Manage Books",
+        href: "/dashboard/admin/books",
+        icon: "📚",
+      },
+      {
+        title: "Transactions",
+        href: "/dashboard/admin/transactions",
+        icon: "💳",
+      },
+      {
+        title: "Analytics",
+        href: "/dashboard/admin/analytics",
+        icon: "📊",
+      },
+      {
+        title: "Profile",
+        href: "/dashboard/admin/profile",
+        icon: "👤",
+      },
+    ],
   };
 
+  const navItems = menus[role] || [];
+
   return (
-    <>
-      {/* Mobile Overlay */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-        />
-      )}
+    <aside className="hidden md:flex sticky top-[57px] h-[calc(100vh-57px)] w-[240px] shrink-0 flex-col border-r border-slate-200 bg-white p-4">
+      <div className="mb-6 px-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          Dashboard
+        </p>
 
-      {/* Sidebar */}
-      <aside
-        className={`
-          fixed left-0 top-0 z-50 flex h-screen w-72 flex-col
-          border-r border-[#e5e8e2] bg-[#ffffff]
-          transition-transform duration-300
-          lg:static lg:z-auto lg:translate-x-0
-          ${open ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
-        {/* Logo */}
-        <div className="flex h-20 items-center justify-between border-b border-[#edf0eb] px-6">
-          <Link
-            href="/"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#243b2b] text-white">
-              <Library size={21} />
-            </div>
+        <p className="mt-1 text-sm font-medium capitalize text-slate-700">
+          {role || "User"} Panel
+        </p>
+      </div>
 
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-[#17211b]">
-                BiblioDrop
-              </h1>
+      <nav className="flex flex-col gap-1">
+        {navItems.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            (item.href !== `/dashboard/${role}` &&
+              pathname.startsWith(`${item.href}/`));
 
-              <p className="text-[11px] text-[#7b817c]">
-                Librarian Panel
-              </p>
-            </div>
-          </Link>
-
-          {/* Mobile close */}
-          <button
-            onClick={() => setOpen(false)}
-            className="rounded-lg p-2 text-[#687269] hover:bg-[#f3f5f2] lg:hidden"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
-
-          {/* Main */}
-          <div>
-            <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#9aa19b]">
-              Main Menu
-            </p>
-
-            <div className="space-y-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`
-                      group flex items-center gap-3 rounded-xl px-3 py-3
-                      text-sm font-medium transition-all
-                      ${
-                        active
-                          ? "bg-[#eaf1e9] text-[#294d32]"
-                          : "text-[#626b64] hover:bg-[#f5f7f4] hover:text-[#243b2b]"
-                      }
-                    `}
-                  >
-                    <Icon
-                      size={19}
-                      className={
-                        active
-                          ? "text-[#355b3e]"
-                          : "text-[#89918a] group-hover:text-[#355b3e]"
-                      }
-                    />
-
-                    <span>{item.label}</span>
-
-                    {item.label === "Delivery Requests" && (
-                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#355b3e] px-1.5 text-[10px] font-semibold text-white">
-                        8
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Account */}
-          <div className="mt-8">
-            <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#9aa19b]">
-              Account
-            </p>
-
-            <div className="space-y-1">
-              {accountItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`
-                      group flex items-center gap-3 rounded-xl px-3 py-3
-                      text-sm font-medium transition-all
-                      ${
-                        active
-                          ? "bg-[#eaf1e9] text-[#294d32]"
-                          : "text-[#626b64] hover:bg-[#f5f7f4] hover:text-[#243b2b]"
-                      }
-                    `}
-                  >
-                    <Icon
-                      size={19}
-                      className={
-                        active
-                          ? "text-[#355b3e]"
-                          : "text-[#89918a] group-hover:text-[#355b3e]"
-                      }
-                    />
-
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </nav>
-
-        {/* User Profile */}
-        <div className="border-t border-[#edf0eb] p-4">
-          <div className="flex items-center gap-3 rounded-xl bg-[#f7f9f6] p-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#dce8dc] font-semibold text-[#355b3e]">
-              R
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[#202721]">
-                Rojony
-              </p>
-
-              <p className="truncate text-xs text-[#858c86]">
-                Librarian
-              </p>
-            </div>
-
-            <button
-              title="Logout"
-              className="rounded-lg p-2 text-[#89918a] transition hover:bg-white hover:text-red-500"
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+                isActive
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
             >
-              <LogOut size={18} />
-            </button>
-          </div>
-        </div>
-      </aside>
-    </>
+              <span className="text-base">{item.icon}</span>
+              <span>{item.title}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto border-t border-slate-200 pt-4">
+        <Link
+          href="/"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+        >
+          <span>🏠</span>
+          <span>Back to Home</span>
+        </Link>
+      </div>
+    </aside>
   );
-}
+};
+
+export default DashboardSidebar;
