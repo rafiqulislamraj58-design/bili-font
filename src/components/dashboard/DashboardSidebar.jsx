@@ -99,7 +99,7 @@ const DashboardSidebar = () => {
       },
       {
         title: "Manage Books",
-        href: "/dashboard/admin/books",
+        href: "/dashboard/admin/books/management",
         icon: "📚",
       },
       {
@@ -109,7 +109,7 @@ const DashboardSidebar = () => {
       },
       {
         title: "Analytics",
-        href: "/dashboard/admin/analytics",
+        href: "/dashboard/admin/Analytics",
         icon: "📊",
       },
       {

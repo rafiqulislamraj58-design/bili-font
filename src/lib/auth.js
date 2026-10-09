@@ -20,6 +20,21 @@ export const auth = betterAuth({
       role: {
         type: "string",
         defaultValue: "user",
+        input: true,
+      },
+    },
+  },
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const role = ["user", "librarian"].includes(user.role)
+            ? user.role
+            : "user";
+
+          return { data: { ...user, role } };
+        },
       },
     },
   },
