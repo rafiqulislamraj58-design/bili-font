@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -14,7 +13,10 @@ import {
   Truck,
 } from "lucide-react";
 
-export default function PaymentPage() {
+
+export const dynamic = "force-dynamic";
+
+function PaymentContent() {
   const searchParams = useSearchParams();
   const bookId = searchParams.get("bookId");
 
@@ -57,6 +59,10 @@ export default function PaymentPage() {
 
     fetchBook();
   }, [bookId]);
+
+  const bookPrice = Number(book?.price || 0);
+  const deliveryFee = Number(book?.deliveryFee || 0);
+  const totalAmount = bookPrice + deliveryFee;
 
   const handleCheckout = async () => {
     if (!email.trim()) {
@@ -152,10 +158,6 @@ export default function PaymentPage() {
   const category = book.category || "Unknown Category";
   const image = book.image || "/placeholder-book.jpg";
 
-  const bookPrice = Number(book.price || 0);
-  const deliveryFee = Number(book.deliveryFee || 0);
-  const totalAmount = bookPrice + deliveryFee;
-
   return (
     <main className="min-h-screen bg-slate-50 py-10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -193,9 +195,7 @@ export default function PaymentPage() {
                   Order Information
                 </h2>
 
-                <p className="text-sm text-slate-500">
-                  Your selected book
-                </p>
+                <p className="text-sm text-slate-500">Your selected book</p>
               </div>
             </div>
 
@@ -215,9 +215,7 @@ export default function PaymentPage() {
                   {bookTitle}
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  By {authorName}
-                </p>
+                <p className="mt-1 text-sm text-slate-500">By {authorName}</p>
 
                 <p className="mt-2 text-lg font-bold text-slate-900">
                   ৳{bookPrice}
@@ -290,15 +288,11 @@ export default function PaymentPage() {
           </section>
 
           <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold text-slate-900">
-              Order Summary
-            </h2>
+            <h2 className="text-xl font-bold text-slate-900">Order Summary</h2>
 
             <div className="mt-6 space-y-5">
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm text-slate-600">
-                  Book Price
-                </span>
+                <span className="text-sm text-slate-600">Book Price</span>
 
                 <span className="text-sm font-semibold text-slate-900">
                   ৳{bookPrice}
@@ -306,9 +300,7 @@ export default function PaymentPage() {
               </div>
 
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm text-slate-600">
-                  Delivery Fee
-                </span>
+                <span className="text-sm text-slate-600">Delivery Fee</span>
 
                 <span className="text-sm font-semibold text-slate-900">
                   ৳{deliveryFee}
@@ -357,8 +349,8 @@ export default function PaymentPage() {
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-slate-700" />
 
               <p className="text-xs leading-5 text-slate-500">
-                You will be redirected to Stripe&apos;s secure checkout
-                page to complete your payment.
+                You will be redirected to Stripe&apos;s secure checkout page
+                to complete your payment.
               </p>
             </div>
 
@@ -372,3 +364,20 @@ export default function PaymentPage() {
   );
 }
 
+
+export default function PaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-50">
+          <div className="flex items-center gap-3 text-slate-600">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading payment page...</span>
+          </div>
+        </main>
+      }
+    >
+      <PaymentContent />
+    </Suspense>
+  );
+}
