@@ -1,7 +1,7 @@
 import { authClient } from "@/lib/auth-client";
 
 export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_URL || "https://backedn-bsaf.onrender.com";
 
 async function refreshJwt() {
   const { data } = await authClient.getSession();

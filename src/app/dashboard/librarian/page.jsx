@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const API_URL = "http://localhost:4000"
+const API_URL = "https://backedn-bsaf.onrender.com"
 
 export default function LibrarianOverviewPage() {
   const { data: session, isPending: sessionLoading } = useSession();

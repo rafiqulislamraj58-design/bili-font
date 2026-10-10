@@ -11,7 +11,7 @@ const Page = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await fetch("http://localhost:4000/books");
+        const response = await fetch("https://backedn-bsaf.onrender.com/books");
 
         if (!response.ok) {
           throw new Error("Failed to fetch books");

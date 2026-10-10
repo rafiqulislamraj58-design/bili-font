@@ -10,7 +10,7 @@ Truck,
 Wallet,
 } from "lucide-react";
 
-const API_URL = "http://localhost:4000";
+const API_URL = "https://backedn-bsaf.onrender.com";
 
 async function getResponseData(response) {
 const contentType = response.headers.get("content-type") || "";

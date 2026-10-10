@@ -37,7 +37,7 @@ export default function PaymentPage() {
         setError("");
 
         const response = await fetch(
-          `http://localhost:4000/books/${bookId}`
+          `https://backedn-bsaf.onrender.com/books/${bookId}`
         );
 
         const data = await response.json();
@@ -79,7 +79,7 @@ export default function PaymentPage() {
       setPaymentLoading(true);
 
       const response = await fetch(
-        "http://localhost:4000/payments/create-checkout-session",
+        "https://backedn-bsaf.onrender.com/payments/create-checkout-session",
         {
           method: "POST",
           headers: {

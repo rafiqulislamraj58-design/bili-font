@@ -14,7 +14,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-const API_URL = "http://localhost:4000";
+const API_URL = "https://backedn-bsaf.onrender.com";
 
 const getResponseData = async (res) => {
   const contentType = res.headers.get("content-type") || "";
@@ -72,6 +72,7 @@ export default function ManageDeliveriesPage() {
         setLoading(false);
         return;
       }
+
 
       setError("");
 

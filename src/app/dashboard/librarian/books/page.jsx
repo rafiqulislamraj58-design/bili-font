@@ -24,7 +24,7 @@ const Page = () => {
       setLoading(true);
       setError("");
 
-      const response = await fetch("http://localhost:4000/books", {
+      const response = await fetch("https://backedn-bsaf.onrender.com/books", {
         credentials: "include",
       });
 
@@ -66,7 +66,7 @@ const Page = () => {
       setActionLoading(bookId);
 
       const response = await fetch(
-        `http://localhost:4000/books/${bookId}`,
+        `https://backedn-bsaf.onrender.com/books/${bookId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -105,7 +105,7 @@ const Page = () => {
       setActionLoading(bookId);
 
       const response = await fetch(
-        `http://localhost:4000/books/${bookId}/unpublish`,
+        `https://backedn-bsaf.onrender.com/books/${bookId}/unpublish`,
         {
           method: "PATCH",
           credentials: "include",
